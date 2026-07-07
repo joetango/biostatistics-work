@@ -45,8 +45,8 @@ data.fl <- data.planar |>
 
 set.seed(1)
 
-# data.fl$smoking.pct <- scale(data.fl$cvd.rate.per.100k) * 5 +
-#   rnorm(nrow(data.fl), 24, 3)
+data.fl$smoking.pct <- scale(data.fl$cvd.rate.per.100k) * 5 +
+  rnorm(nrow(data.fl), 24, 3)
 
 ## only run one data.fl$smoking.pct at a time. multiples to explore
 ## various spatial strengths
@@ -54,12 +54,12 @@ set.seed(1)
 # data.fl$smoking.pct <- scale(data.fl$cvd.rate.per.100k) * 3 +
 #   rnorm(nrow(data.fl), 24, 3)
 
-data.fl$smoking.pct <- rnorm(nrow(data.fl), mean = 40, sd = 5)
+# data.fl$smoking.pct <- rnorm(nrow(data.fl), mean = 40, sd = 5)
 
-# data.fl$drinking.pct <- -scale(data.fl$cvd.rate.per.100k) * 2 +
-#   rnorm(nrow(data.fl), 32, 4)
+data.fl$drinking.pct <- -scale(data.fl$cvd.rate.per.100k) * 2 +
+  rnorm(nrow(data.fl), 32, 4)
 
-data.fl$drinking.pct <- rnorm(nrow(data.fl), mean = 32, sd = 4)
+# data.fl$drinking.pct <- rnorm(nrow(data.fl), mean = 32, sd = 4)
 
 data.fl$education.pct <- rnorm(nrow(data.fl), mean = 50, sd = 10)
 
