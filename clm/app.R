@@ -29,11 +29,13 @@ ui <- page_fillable(
     
   layout_columns(
     card(
-      radioButtons("rolls",
-                    "Number of Rolls:",
-                    choices = c(
-                      10, 25, 100, 500, 10000
-                    )
+      sliderInput("rolls",
+                  "Number of Rolls:", 
+                  min = 25,
+                  max = 1000,
+                  value = 25,
+                  step = 25,
+                  width = "100%"
         ),
         actionButton(
           "runplot", "Generate Plot"
@@ -43,16 +45,15 @@ ui <- page_fillable(
       
     card(
         print(
-          "The Central Limit Theoremstates that an increase in sample 
-          size will result in a normal distribution of the sample mean. 
-          This app seeks to illustrate this theorem in play using six-sided 
-          dice. Select a number of rolls, and observe the distribution of 
-          values."
+          "This app aims to illustrates the Central Limit Theorem using 8
+          six-sided dice. Select a quantity to roll the 8 dice that many 
+          times and observe as the distribution changes when the sample 
+          size increases."
         ),
         a("Central Limit Theorem",
           href = "https://www.geeksforgeeks.org/maths/central-limit-theorem/"),
       ),
-    col_widths = c(4, 8)
+    col_widths = c(6, 6)
     ),
     
   card(

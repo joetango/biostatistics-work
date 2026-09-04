@@ -1,0 +1,140 @@
+---
+title: "Homework 12"
+author: "Joe Dickerson"
+date: "2025-04-23"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+```{r}
+
+library(tidyverse)
+library(faraway)
+library(lme4)
+library(MASS)
+library(geepack)
+
+data(ohio)
+
+```
+
+1. The ohio data concern 536 children from Steubenville, Ohio and were taken as part of a study on the effects of air pollution. Children were in the study for 4 years from ages 7 to 10. The response was whether they wheezed or not. The variables are:
+
+*resp* an indicator of wheeze status (1 = yes, 0 = no)
+*id* an identifier for the child
+*age* 7 yrs = −2, 8 yrs = −1, 9 yrs = 0, 10 yrs = 1
+*smoke* an indicator of maternal smoking at the first year of the study (1 = smoker, 0 = nonsmoker)
+
+a. Do any of the mothers in the study change their smoking status during the period of observation?
+
+***I am using a late homework assignment token on this submission***
+
+No mothers change their smoking status throughout the period of observation. We check this with logic and using tools from the dplyr package.
+
+```{r}
+
+ohio %>% 
+  group_by(id) %>% 
+  summarize(smoke_min = min(smoke),
+            smoke_max = max(smoke),
+            .groups = "drop") %>% 
+  filter(smoke_min != smoke_max)
+
+```
+
+b. Construct a table that shows proportion of children who wheeze for 0, 1, 2, 3 or 4 years broken down by maternal smoking status.
+
+```{r}
+
+subject_quantity <- length(unique(ohio$id))
+
+xtabs(resp ~ age + smoke, ohio)
+
+```
+
+c. Make plot which shows how the proportion of children wheezing changes by age with a separate line for smoking and nonsmoking mothers.
+
+```{r}
+
+gg <- ohio %>% 
+  group_by(age, smoke) %>% 
+  summarize(proportion_wheeze = mean(resp), .groups = "drop")
+
+gg %>% 
+  ggplot(aes(x = age, y = proportion_wheeze, color = factor(smoke))) +
+  geom_line()
+
+```
+
+d.  Group the data by child to count the total (out of four) years of wheezing. Fit a binomial GLM to this response to check for a maternal smoking effect. Does this prove there is a smoking effect or could there be another plausible explanation?
+
+Though maternal smoking is significant, I do not think that it "proves" a smoking effect, though it does seem to suggest one. There could be a more plausible explanation, though it would take further analysis to uncover. 
+
+```{r}
+
+glm_data <- ohio %>% 
+  group_by(id) %>% 
+  summarize(
+    wheeze_years = sum(resp),
+    total_yrs = n(),
+    smoke = first(smoke)
+  )
+
+glm <- glm(cbind(wheeze_years, total_yrs - wheeze_years) ~ smoke, family = binomial, glm_data)
+
+summary(glm)
+
+```
+
+e.  Fit a model for each individual response using a GLMM fit using penalized quasi-likelihood. Describe the effects of age and maternal smoking. How do the odds of wheezing change numerically over time?
+
+We do not see a strong relationship between maternal smoking and wheeze, which further answers the question from part c. It does not appear that there is a strong effect of age and maternal smoking either. The odds of wheezing is 1.12 times more likely with a mother that smokes. The p-value for the interaction between the two is insignificant. 
+
+```{r}
+
+modpql <- glmmPQL(resp ~ smoke + age + I(smoke*age), random = ~1|id, family=binomial, ohio )
+
+summary(modpql)
+
+first(exp(coef(modpql)))
+
+```
+
+f. Now fit the same model but using adaptive Gaussian-Hermit quadrature. Compare to the previous model fit.
+
+We see a similar fit as part e. An insignificant interaction between smoke and age. Our coefficient for the interaction is 0.1053, which exponentiated is 1.11, a very similar outcome to the odds from the previous problem.
+
+```{r}
+
+modgh <- glmer(resp ~ smoke + age + I(smoke*age) + (1|id), nAGQ = 25, family = binomial, ohio)
+
+summary(modgh)
+
+exp(0.1053)
+
+```
+
+i. Fit the model using GEE. Use an autoregressive rather than exchangeable error structure. Compare the results to the previous model fits. In your model, what indicates that a child who already wheezes is likely to continue to wheeze?
+
+Once again, we have a similar result to the previous models. We see roughly the same significance and standard errors. The odds of wheezing with the interaction is now 1.09. Because the odds are so close to 1, it seems possible that regardless of maternal smoking, a child is as likely to continue to wheeze if they already have symptoms of wheezing. 
+
+```{r}
+
+modgeep <- geeglm(resp ~ smoke + age + I(smoke*age), id=id, family = binomial, corstr = "ar1", ohio)
+
+summary(modgeep)
+
+exp(0.0835)
+
+```
+
+j. What is your overall conclusion regarding the effect of age and maternal smoking? Can we trust the GLM result or are the GLMM models preferable?
+
+It seems that the GLMM models are preferable over the GLM. Perhaps the overall results would differ if we had data on children with a changing maternal smoking variable throughout the course of the study. It appears that age and maternal smoking do not have an influential effect on wheezing.
+

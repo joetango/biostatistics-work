@@ -1,0 +1,12 @@
+name: clm1
+title: clm1
+username: joetd
+account: joetd
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 16458734
+bundleId: 11503331
+url: https://joetd.shinyapps.io/clm1/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
